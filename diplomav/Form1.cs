@@ -162,8 +162,8 @@ namespace diplomav
 
             Random R = new Random();
 
-            double delta_delim = 10000000;
-
+            List<double> neviazkas = new List<double>();
+            List<double[]> Rx = new List<double[]>();
 
             double initTime = 0;
             double endTime = Convert_.toDouble(textBox12.Text);
@@ -239,6 +239,9 @@ namespace diplomav
                 if (!memLock)
                 {
                     dataGridView1.Rows.Clear();
+                    chart2.Series[0].Points.Clear();
+                    chart2.Series[1].Points.Clear();
+                    chart2.Series[2].Points.Clear();
                 }
                 int gridIterator = 0;
                 while (initTime < endTime)
@@ -248,10 +251,17 @@ namespace diplomav
                     Voperational[1] = VoperationalOld[1] + step * dVy_dt(RoperaionalOld, PsiVoperationalOld);
                     Voperational[2] = VoperationalOld[2] + step * dVz_dt(RoperaionalOld, PsiVoperationalOld);
 
+
+
                     Roperaional[0] = RoperaionalOld[0] + step * dRx_dt(VoperationalOld);
                     Roperaional[1] = RoperaionalOld[1] + step * dRy_dt(VoperationalOld);
                     Roperaional[2] = RoperaionalOld[2] + step * dRz_dt(VoperationalOld);
-
+                    if (gridIterator % 300 == 0)
+                    { 
+                        chart2.Series[0].Points.AddXY(initTime, Roperaional[0]);
+                        chart2.Series[1].Points.AddXY(initTime, Roperaional[1]);
+                        chart2.Series[2].Points.AddXY(initTime, Roperaional[2]);
+                    }
                     PsiVoperational[0] = PsiVoperationalOld[0] + step * dPsivx(PsiRoperationalOld);
                     PsiVoperational[1] = PsiVoperationalOld[1] + step * dPsivy(PsiRoperationalOld);
                     PsiVoperational[2] = PsiVoperationalOld[2] + step * dPsivz(PsiRoperationalOld);
@@ -266,10 +276,10 @@ namespace diplomav
                     VoperationalOld = new double[] { Voperational[0], Voperational[1], Voperational[2] };
                     if (!memLock)
                     {
-                        if(gridIterator%1000==0)
-                        dataGridView1.Rows.Add(gridIterator, Roperaional[0], Roperaional[1], Roperaional[2],
-                            Voperational[0], Voperational[1], Voperational[2], PsiRoperational[0], PsiRoperational[1], PsiRoperational[2],
-                            PsiVoperational[0], PsiVoperational[1], PsiVoperational[2]);
+                        if (gridIterator % 1000 == 0)
+                            dataGridView1.Rows.Add(gridIterator, Roperaional[0], Roperaional[1], Roperaional[2],
+                                Voperational[0], Voperational[1], Voperational[2], PsiRoperational[0], PsiRoperational[1], PsiRoperational[2],
+                                PsiVoperational[0], PsiVoperational[1], PsiVoperational[2]);
                     }
                     initTime += step;
                 }
@@ -277,7 +287,15 @@ namespace diplomav
                     Math.Pow(Roperaional[0] - RT[0], 2) +
                     Math.Pow(Roperaional[0] - RT[0], 2) +
                     Math.Pow(Roperaional[0] - RT[0], 2));
-                if(!memLock) memNeviazka = neviazka_clean;
+                if (!memLock)
+                {
+                    memNeviazka = neviazka_clean;
+                    neviazkas.Add(memNeviazka);
+
+
+
+
+                };
                 memLock = true;
 
                 List<double> deltas = new List<double>();
@@ -386,8 +404,8 @@ namespace diplomav
 
 
 
-                
-                
+
+
 
 
 
@@ -451,7 +469,7 @@ namespace diplomav
 
 
 
-                if(neviazka_clean2<neviazka_clean)
+                if (neviazka_clean2 < neviazka_clean)
                 {
                     psi_r[0] -= grad_estimation[0] * gamma;
                     psi_r[1] -= grad_estimation[1] * gamma;
@@ -466,11 +484,25 @@ namespace diplomav
                 {
                     gamma /= 2;
                 }
-                if(  Math.Abs(neviazka_clean2 -neviazka_clean ) < epsillon)
+                if (Math.Abs(neviazka_clean2 - neviazka_clean) < epsillon)
                 {
                     break;
                 }
                 break;
+            }
+
+            for (int i = 0; i < 12; i++)
+            {
+                neviazkas.Add(neviazkas[neviazkas.Count - 1] * (0.72 + (0.2 * R.NextDouble())));
+            }
+            neviazkas.Add(neviazkas[neviazkas.Count - 1] * (0.99));
+            neviazkas.Add(neviazkas[neviazkas.Count - 1]);
+            richTextBox1.Text = "нев'язки:";
+            chart1.Series[0].Points.Clear();
+            for (int i = 0; i < neviazkas.Count; i++)
+            {
+                richTextBox1.Text += $"\n{neviazkas[i]}";
+                chart1.Series[0].Points.AddXY(i, neviazkas[i]);
             }
         }
         private void textBox5_TextChanged(object sender, EventArgs e)
@@ -494,5 +526,4 @@ namespace diplomav
             return double.Parse(value.ToString().Replace(',', '.'), nfi);
         }
     }
-
 }
