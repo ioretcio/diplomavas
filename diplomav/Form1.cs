@@ -18,6 +18,12 @@ namespace diplomav
         public Form1()
         {
             InitializeComponent();
+
+
+            chart1.ChartAreas[0].AxisX.Interval = 5;
+            chart2.ChartAreas[0].AxisX.Interval = 10000;
+            chart1.ChartAreas[0].AxisX.LabelStyle.Format = "0";
+            chart2.ChartAreas[0].AxisX.LabelStyle.Format = "0";
         }
 
 
@@ -488,7 +494,10 @@ namespace diplomav
                 {
                     break;
                 }
-                break;
+
+
+
+                break;//debug option
             }
 
             for (int i = 0; i < 12; i++)
