@@ -21,12 +21,17 @@ namespace diplomav
 
 
             chart1.ChartAreas[0].AxisX.Interval = 5;
-            chart2.ChartAreas[0].AxisX.Interval = 10000;
+
+
+            chart2.ChartAreas[0].AxisX.Interval = 1000000;
+            chart3.ChartAreas[0].AxisX.Interval = 1000000;
+            chart4.ChartAreas[0].AxisX.Interval = 1000000;
+
+
             chart1.ChartAreas[0].AxisX.LabelStyle.Format = "0";
             chart2.ChartAreas[0].AxisX.LabelStyle.Format = "0";
-
-
             chart3.ChartAreas[0].AxisX.LabelStyle.Format = "0";
+            chart4.ChartAreas[0].AxisX.LabelStyle.Format = "0";
         }
 
 
@@ -131,6 +136,19 @@ namespace diplomav
             return a + (b - a) * coef;
         }
 
+
+        public double reflect(PointF Real, PointF LineStart, PointF LineEnd)
+        {
+            double b = LineStart.Y - LineStart.X;
+
+
+            double a = (LineEnd.Y - LineStart.Y) / (LineEnd.X - LineStart.X);
+
+
+
+            return ((a * Real.X) + b) - (Real.Y - ((a * Real.X) + b));
+        }
+
         public double norm(int index, double[] R_method)
         {
             double r = Math.Sqrt(R_method[0] * R_method[0] + R_method[1] * R_method[1] + R_method[2] * R_method[2]);
@@ -171,6 +189,11 @@ namespace diplomav
             VT[0] = Convert_.toDouble(textBox10.Text);
             VT[1] = Convert_.toDouble(textBox8.Text);
             VT[2] = Convert_.toDouble(textBox6.Text);
+
+
+            double mstart = Convert_.toDouble(textBox14.Text);
+            double mend = Convert_.toDouble(textBox15.Text);
+
 
             Random R = new Random();
 
@@ -279,13 +302,27 @@ namespace diplomav
                     Roperaional[2] = RoperaionalOld[2] + step * dRz_dt(VoperationalOld);
                     if (gridIterator % 300 == 0)
                     {
-                        chart2.Series[0].Points.AddXY(initTime, Roperaional[0]);
-                        chart2.Series[1].Points.AddXY(initTime, Roperaional[1]);
-                        chart2.Series[2].Points.AddXY(initTime, Roperaional[2]);
+                        chart2.Series[0].Points.AddXY(initTime * 100, reflect(new PointF((float)initTime,
+                            (float)Roperaional[0]), new PointF(0, (float)R0[0]), new PointF((float)endTime, (float)RT[0])));
+                        chart2.Series[1].Points.AddXY(initTime * 100, reflect(new PointF((float)initTime,
+                            (float)Roperaional[1]), new PointF(0, (float)R0[1]), new PointF((float)endTime, (float)RT[1])));
+                        chart2.Series[2].Points.AddXY(initTime * 100, reflect(new PointF((float)initTime,
+                            (float)Roperaional[2]), new PointF(0, (float)R0[2]), new PointF((float)endTime, (float)RT[2])));
 
-                        chart3.Series[0].Points.AddXY(initTime, pointInLine(Voperational[0], VT[0], initTime / endTime));
-                        chart3.Series[1].Points.AddXY(initTime, pointInLine(Voperational[1], VT[1], initTime / endTime));
-                        chart3.Series[2].Points.AddXY(initTime, pointInLine(Voperational[2], VT[2], initTime / endTime));
+                        
+
+                        chart3.Series[0].Points.AddXY(initTime * 100, pointInLine(Voperational[0], VT[0], initTime / endTime));
+                        chart3.Series[1].Points.AddXY(initTime * 100, pointInLine(Voperational[1], VT[1], initTime / endTime));
+                        chart3.Series[2].Points.AddXY(initTime * 100, pointInLine(Voperational[2], VT[2], initTime / endTime));
+
+                        chart4.Series[0].Points.AddXY(initTime * 100, pointInLine(mstart, mend, initTime / endTime));
+
+
+                        mstart -= Math.Sqrt(
+                            Math.Pow(pointInLine(Voperational[0], VT[0], initTime / endTime), 2) +
+                            Math.Pow(pointInLine(Voperational[1], VT[1], initTime / endTime), 2) +
+                            Math.Pow(pointInLine(Voperational[2], VT[2], initTime / endTime), 2)
+                        )/350;
                     }
                     PsiVoperational[0] = PsiVoperationalOld[0] + step * dPsivx(PsiRoperationalOld);
                     PsiVoperational[1] = PsiVoperationalOld[1] + step * dPsivy(PsiRoperationalOld);
