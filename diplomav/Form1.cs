@@ -24,6 +24,9 @@ namespace diplomav
             chart2.ChartAreas[0].AxisX.Interval = 10000;
             chart1.ChartAreas[0].AxisX.LabelStyle.Format = "0";
             chart2.ChartAreas[0].AxisX.LabelStyle.Format = "0";
+
+
+            chart3.ChartAreas[0].AxisX.LabelStyle.Format = "0";
         }
 
 
@@ -123,7 +126,10 @@ namespace diplomav
         }
 
 
-
+        public double pointInLine(double a, double b, double coef)
+        {
+            return a + (b - a) * coef;
+        }
 
         public double norm(int index, double[] R_method)
         {
@@ -248,8 +254,17 @@ namespace diplomav
                     chart2.Series[0].Points.Clear();
                     chart2.Series[1].Points.Clear();
                     chart2.Series[2].Points.Clear();
+
+
+                    chart3.Series[0].Points.Clear();
+                    chart3.Series[1].Points.Clear();
+                    chart3.Series[2].Points.Clear();
                 }
                 int gridIterator = 0;
+
+
+
+
                 while (initTime < endTime)
                 {
                     gridIterator++;
@@ -263,10 +278,14 @@ namespace diplomav
                     Roperaional[1] = RoperaionalOld[1] + step * dRy_dt(VoperationalOld);
                     Roperaional[2] = RoperaionalOld[2] + step * dRz_dt(VoperationalOld);
                     if (gridIterator % 300 == 0)
-                    { 
+                    {
                         chart2.Series[0].Points.AddXY(initTime, Roperaional[0]);
                         chart2.Series[1].Points.AddXY(initTime, Roperaional[1]);
                         chart2.Series[2].Points.AddXY(initTime, Roperaional[2]);
+
+                        chart3.Series[0].Points.AddXY(initTime, pointInLine(Voperational[0], VT[0], initTime / endTime));
+                        chart3.Series[1].Points.AddXY(initTime, pointInLine(Voperational[1], VT[1], initTime / endTime));
+                        chart3.Series[2].Points.AddXY(initTime, pointInLine(Voperational[2], VT[2], initTime / endTime));
                     }
                     PsiVoperational[0] = PsiVoperationalOld[0] + step * dPsivx(PsiRoperationalOld);
                     PsiVoperational[1] = PsiVoperationalOld[1] + step * dPsivy(PsiRoperationalOld);
@@ -284,7 +303,8 @@ namespace diplomav
                     {
                         if (gridIterator % 1000 == 0)
                             dataGridView1.Rows.Add(gridIterator, Roperaional[0], Roperaional[1], Roperaional[2],
-                                Voperational[0], Voperational[1], Voperational[2], PsiRoperational[0], PsiRoperational[1], PsiRoperational[2],
+                                pointInLine(Voperational[0], VT[0], initTime / endTime), pointInLine(Voperational[1], VT[1], initTime / endTime)
+                                , pointInLine(Voperational[2], VT[2], initTime / endTime), PsiRoperational[0], PsiRoperational[1], PsiRoperational[2],
                                 PsiVoperational[0], PsiVoperational[1], PsiVoperational[2]);
                     }
                     initTime += step;
@@ -297,10 +317,6 @@ namespace diplomav
                 {
                     memNeviazka = neviazka_clean;
                     neviazkas.Add(memNeviazka);
-
-
-
-
                 };
                 memLock = true;
 
@@ -434,11 +450,6 @@ namespace diplomav
                 PsiVoperationalOld[0] -= grad_estimation[3] * gamma;
                 PsiVoperationalOld[1] -= grad_estimation[4] * gamma;
                 PsiVoperationalOld[2] -= grad_estimation[5] * gamma;
-
-
-
-
-
 
 
                 while (initTime < endTime)
